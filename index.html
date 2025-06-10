@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <title>AngularJS with WebApi</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 5px; }
+    </style> 
+</head>
+<body ng-controller="MainController">
+
+    <h1>AngularJS With WebApi and Stored Procedure</h1>
+    
+    <form ng-submit="isEditing ? updateUser () : addUser ()">
+        <input type="text" ng-model="newUser .name" placeholder="Please enter your name" required>
+        <input type="text" ng-model="newUser .address" placeholder="Please enter your address" required>
+        <input type="text" ng-model="newUser .country" placeholder="Please enter your country" required>
+        <input type="text" ng-model="newUser .city" placeholder="Please enter your city" required>
+        <input type="text" ng-model="newUser .mobile" placeholder="Please enter your mobile" required>
+        
+        <button type="submit">{{ isEditing ? 'Update' : 'Add' }}</button>
+        <button type="button" ng-click="clearForm()">Clear</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Country</th>
+                <th>City</th>
+                <th>Mobile</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="user in users">
+                <td>{{ user.name }}</td>
+                <td>{{ user.address }}</td>
+                <td>{{ user.country }}</td>
+                <td>{{ user.city }}</td>
+                <td>{{ user.mobile }}</td>
+                <td>
+                    <button ng-click="editUser (user)">Edit</button>
+                    <button ng-click="deleteUser (user)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        angular.module('myApp', [])
+        .controller('MainController', function($scope) {
+            // Load users from localStorage
+            $scope.users = JSON.parse(localStorage.getItem('users')) || [];
+            $scope.isEditing = false;
+            $scope.newUser  = {};
+
+            $scope.addUser  = function() {
+                $scope.users.push(angular.copy($scope.newUser ));
+                $scope.saveToLocalStorage();
+                $scope.clearForm();
+            };
+
+            $scope.clearForm = function() {
+                $scope.newUser  = {};
+                $scope.isEditing = false;
+            };
+
+            $scope.editUser  = function(user) {
+                $scope.newUser  = angular.copy(user);
+                $scope.isEditing = true;
+            };
+
+            $scope.updateUser  = function() {
+                const index = $scope.users.findIndex(u => u.name === $scope.newUser .name && u.mobile === $scope.newUser .mobile);
+                if (index > -1) {
+                    $scope.users[index] = angular.copy($scope.newUser );
+                    $scope.saveToLocalStorage();
+                }
+                $scope.clearForm();
+            };
+
+            $scope.deleteUser  = function(user) {
+    if (confirm("Are you sure you want to delete this user?")) {
+        const index = $scope.users.indexOf(user);
+        if (index > -1) {
+            $scope.users.splice(index, 1);
+            $scope.saveToLocalStorage();
+        }
+    }
+ };
+
+            $scope.saveToLocalStorage = function() {
+                localStorage.setItem('users', JSON.stringify($scope.users));
+            };
+        });
+    </script>
+</body>
+</html>
